@@ -23,12 +23,12 @@ liip_imagine:
         link_small:
             quality: 90
             filters:
-                thumbnail: { size: [100, null], mode: outbound }
+                thumbnail: { size: [55, null], mode: outbound }
         link_medium:
             quality: 90
             filters:
-                thumbnail: { size: [500, null], mode: outbound }
+                thumbnail: { size: [224, null], mode: outbound }
         link_big:
             quality: 100
             filters:
-                thumbnail: { size: [800, null], mode: outbound }
+                thumbnail: { size: [465, null], mode: outbound }
