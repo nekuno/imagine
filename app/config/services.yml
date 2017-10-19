@@ -15,6 +15,5 @@ services:
         arguments:
             - "@liip_imagine.binary.mime_type_guesser"
             - "@app.binary.locator.filesystem"
-            - "%defaultImagePath%"
         tags:
             - { name: "liip_imagine.binary.loader", loader: url_data_loader }

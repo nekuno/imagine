@@ -13,6 +13,8 @@ use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 class ImagineController extends DefaultImagineController
 {
+    const IMAGES_PATH = 'uploads/links/';
+    const DEFAULT_IMAGE_FILE = 'default-content-image-squared.jpg';
     /**
      * This action applies a given filter to a given image, optionally saves the image and outputs it to the browser at the same time.
      *
@@ -29,9 +31,13 @@ class ImagineController extends DefaultImagineController
     {
         $path = str_replace('!', '%', $path);
         $url = $path;
-        $fileName = preg_replace("/[^a-zA-Z0-9\\-\\_\\/\\.]+/", "", $path);
-        $path = "uploads/links/$fileName";
-
+        try {
+            file_get_contents(urldecode($path));
+            $fileName = preg_replace("/[^a-zA-Z0-9\\-\\_\\/\\.]+/", "", $path);
+            $path = self::IMAGES_PATH . $fileName;
+        } catch (\Exception $e) {
+            $path = self::IMAGES_PATH . self::DEFAULT_IMAGE_FILE;
+        }
         $resolver = $request->get('resolver');
 
         try {

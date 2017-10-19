@@ -3,3 +3,5 @@ app/config/parameters.yml
 app/cache
 app/logs
 vendor
+web/media/cache
+web/uploads/links

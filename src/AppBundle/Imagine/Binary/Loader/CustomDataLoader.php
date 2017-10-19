@@ -7,6 +7,7 @@ use Liip\ImagineBundle\Binary\Loader\LoaderInterface;
 use Liip\ImagineBundle\Model\Binary;
 use Liip\ImagineBundle\Binary\Locator\LocatorInterface;
 use Liip\ImagineBundle\Binary\MimeTypeGuesserInterface;
+use AppBundle\Imagine\Controller\ImagineController;
 
 class CustomDataLoader implements LoaderInterface
 {
@@ -20,13 +21,10 @@ class CustomDataLoader implements LoaderInterface
      */
     protected $locator;
 
-    protected $defaultPath;
-
-    public function __construct(MimeTypeGuesserInterface $mimeGuesser, LocatorInterface $locator, $defaultPath)
+    public function __construct(MimeTypeGuesserInterface $mimeGuesser, LocatorInterface $locator)
     {
         $this->mimeTypeGuesser = $mimeGuesser;
         $this->locator = $locator;
-        $this->defaultPath = $defaultPath;
     }
 
     /**
@@ -39,7 +37,7 @@ class CustomDataLoader implements LoaderInterface
         $ext = pathinfo($path, PATHINFO_EXTENSION);
         $url = urldecode($path);
         $fileName = preg_replace("/[^a-zA-Z0-9\\-\\_\\/\\.]+/", "", $path);
-        $path = "uploads/links/$fileName";
+        $path = ImagineController::IMAGES_PATH . $fileName;
         try {
             $localPath = $this->locator->locate($path);
             $binary = file_get_contents($localPath);
@@ -53,11 +51,11 @@ class CustomDataLoader implements LoaderInterface
                     fclose($fp);
                     $binary = $content;
                 } else {
-                    $binary = file_get_contents($this->defaultPath);
+                    $binary = file_get_contents(ImagineController::IMAGES_PATH . ImagineController::DEFAULT_IMAGE_FILE);
                 }
 
             } catch (\Exception $exception) {
-                $binary = file_get_contents($this->defaultPath);
+                $binary = file_get_contents(ImagineController::IMAGES_PATH . ImagineController::DEFAULT_IMAGE_FILE);
             }
         }
 

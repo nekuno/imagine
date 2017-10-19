@@ -1,3 +1,2 @@
 parameters:
     secret: ''
-    defaultImagePath: 'uploads/links/default-content-image-squared.jpg'
