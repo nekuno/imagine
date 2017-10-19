@@ -1,0 +1,34 @@
+imports:
+    - { resource: parameters.yml }
+    - { resource: services.yml }
+
+framework:
+    secret: "%secret%"
+    profiler: { only_exceptions: false }
+
+# LiipImagineBundle
+liip_imagine:
+    data_loader: url_data_loader
+    controller:
+        filter_action:         app.liip_imagine.controller:filterAction
+        filter_runtime_action: app.liip_imagine.controller:filterRuntimeAction
+    resolvers:
+        default:
+            web_path:
+                web_root: "%kernel.root_dir%/../web"
+                cache_prefix: media/cache
+    cache: default
+    filter_sets:
+        cache: ~
+        link_small:
+            quality: 90
+            filters:
+                thumbnail: { size: [100, null], mode: outbound }
+        link_medium:
+            quality: 90
+            filters:
+                thumbnail: { size: [500, null], mode: outbound }
+        link_big:
+            quality: 100
+            filters:
+                thumbnail: { size: [800, null], mode: outbound }

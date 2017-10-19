@@ -1,0 +1,20 @@
+services:
+    app.liip_imagine.controller:
+        class: AppBundle\Imagine\Controller\ImagineController
+        arguments:
+            - "@liip_imagine.data.manager"
+            - "@liip_imagine.filter.manager"
+            - "@liip_imagine.cache.manager"
+            - "@liip_imagine.cache.signer"
+    app.binary.locator.filesystem:
+        class: Liip\ImagineBundle\Binary\Locator\FileSystemLocator
+        arguments:
+          - ["/"]
+    imagine.data.loader.url_data_loader:
+        class: AppBundle\Imagine\Binary\Loader\CustomDataLoader
+        arguments:
+            - "@liip_imagine.binary.mime_type_guesser"
+            - "@app.binary.locator.filesystem"
+            - "%defaultImagePath%"
+        tags:
+            - { name: "liip_imagine.binary.loader", loader: url_data_loader }
