@@ -44,6 +44,10 @@ class CustomDataLoader implements LoaderInterface
 
         $mime = $this->mimeTypeGuesser->guess($binary);
 
+        if ($mime === 'text/plain' && substr($ext, 0, 3) === 'svg') {
+            $mime = 'image/svg';
+        }
+
         return new Binary($binary, $mime, $ext);
     }
 }
