@@ -4,7 +4,6 @@ namespace AppBundle\Imagine\Controller;
 
 use Liip\ImagineBundle\Controller\ImagineController as DefaultImagineController;
 use Imagine\Exception\RuntimeException;
-use Liip\ImagineBundle\Exception\Binary\Loader\NotLoadableException;
 use Liip\ImagineBundle\Exception\Imagine\Filter\NonExistingFilterException;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
@@ -29,29 +28,30 @@ class ImagineController extends DefaultImagineController
      */
     public function filterAction(Request $request, $path, $filter)
     {
-        $path = str_replace('!', '%', $path);
-        $url = $path;
-        try {
-            file_get_contents(urldecode($path));
-            $fileName = preg_replace("/[^a-zA-Z0-9\\-\\_\\/\\.]+/", "", $path);
-            $path = self::IMAGES_PATH . $fileName;
-        } catch (\Exception $e) {
-            $path = self::IMAGES_PATH . self::DEFAULT_IMAGE_FILE;
-        }
+        $url = $request->get('url');
         $resolver = $request->get('resolver');
 
         try {
             if (!$this->cacheManager->isStored($path, $filter, $resolver)) {
-                try {
-                    $binary = $this->dataManager->find($filter, $url);
-                } catch (NotLoadableException $e) {
-                    if ($defaultImageUrl = $this->dataManager->getDefaultImageUrl($filter)) {
-                        return new RedirectResponse($defaultImageUrl);
-                    }
+                if (!@file_get_contents($path)) {
+                    try {
+                        if ($content = $this->fetchUrl($url)) {
+                            if(!file_exists(dirname($path))) {
+                                mkdir(dirname($path), 0755, true);
+                            }
+                            $fp = fopen($path, "wb");
+                            fwrite($fp, $content);
+                            fclose($fp);
+                        } else {
+                            $path = self::IMAGES_PATH . self::DEFAULT_IMAGE_FILE;
+                        }
 
-                    throw new NotFoundHttpException('Source image could not be found', $e);
+                    } catch (\Exception $e) {
+                        $path = self::IMAGES_PATH . self::DEFAULT_IMAGE_FILE;
+                    }
                 }
 
+                $binary = $this->dataManager->find($filter, $path);
                 $this->cacheManager->store(
                     $this->filterManager->applyFilter($binary, $filter),
                     $path,
@@ -72,5 +72,29 @@ class ImagineController extends DefaultImagineController
         } catch (RuntimeException $e) {
             throw new \RuntimeException(sprintf('Unable to create image for path "%s" and filter "%s". Message was "%s"', $path, $filter, $e->getMessage()), 0, $e);
         }
+    }
+
+    protected function fetchUrl($uri) {
+        $handle = curl_init();
+
+        curl_setopt($handle, CURLOPT_URL, $uri);
+        curl_setopt($handle, CURLOPT_POST, false);
+        curl_setopt($handle, CURLOPT_BINARYTRANSFER, false);
+        curl_setopt($handle, CURLOPT_HEADER, true);
+        curl_setopt($handle, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($handle, CURLOPT_USERAGENT,'Mozilla/5.0 (Windows; U; Windows NT 5.1; en-US; rv:1.8.1.13) Gecko/20080311 Firefox/2.0.0.13');
+        curl_setopt($handle, CURLOPT_CONNECTTIMEOUT, 10);
+        curl_setopt($handle, CURLOPT_FOLLOWLOCATION, TRUE);
+
+        $response = curl_exec($handle);
+        $hLength  = curl_getinfo($handle, CURLINFO_HEADER_SIZE);
+        $httpCode = curl_getinfo($handle, CURLINFO_HTTP_CODE);
+        $body     = substr($response, $hLength);
+
+        if ($httpCode >= 400) {
+            throw new \Exception($httpCode);
+        }
+
+        return $body;
     }
 }

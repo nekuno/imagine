@@ -35,28 +35,11 @@ class CustomDataLoader implements LoaderInterface
     public function find($path)
     {
         $ext = pathinfo($path, PATHINFO_EXTENSION);
-        $url = urldecode($path);
-        $fileName = preg_replace("/[^a-zA-Z0-9\\-\\_\\/\\.]+/", "", $path);
-        $path = ImagineController::IMAGES_PATH . $fileName;
+
         try {
-            $localPath = $this->locator->locate($path);
-            $binary = file_get_contents($localPath);
-
+            $binary = file_get_contents($path);
         } catch (\Exception $e) {
-            $localPath = $path;
-            try {
-                if ($content = file_get_contents($url)) {
-                    $fp = fopen($localPath, "wb");
-                    fwrite($fp, $content);
-                    fclose($fp);
-                    $binary = $content;
-                } else {
-                    $binary = file_get_contents(ImagineController::IMAGES_PATH . ImagineController::DEFAULT_IMAGE_FILE);
-                }
-
-            } catch (\Exception $exception) {
-                $binary = file_get_contents(ImagineController::IMAGES_PATH . ImagineController::DEFAULT_IMAGE_FILE);
-            }
+            $binary = file_get_contents(ImagineController::IMAGES_PATH . ImagineController::DEFAULT_IMAGE_FILE);
         }
 
         $mime = $this->mimeTypeGuesser->guess($binary);

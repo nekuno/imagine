@@ -27,7 +27,7 @@ liip_imagine:
         link_medium:
             quality: 90
             filters:
-                thumbnail: { size: [224, null], mode: outbound }
+                thumbnail: { size: [223, null], mode: outbound }
         link_big:
             quality: 100
             filters:

@@ -10,7 +10,7 @@ use Symfony\Component\Console\Input\InputOption;
 
 class DeleteOldImagesCommand extends Command
 {
-    const MAX_FILES_LENGTH = 200000;
+    const MAX_FILES_LENGTH = 9900;
 
     protected function configure()
     {
@@ -27,30 +27,30 @@ class DeleteOldImagesCommand extends Command
         $imagesPath = 'web/' . ImagineController::IMAGES_PATH;
 
         if (file_exists($imagesPath)) {
-            $files = glob($imagesPath . '*.*');
+            $dirs = array_filter(glob($imagesPath . '*'), 'is_dir');
 
-            if ($this->isUsedDiskSpaceMax($maxPercentage) || count($files) > self::MAX_FILES_LENGTH) {
+            if ($this->isUsedDiskSpaceMax($maxPercentage) || count($dirs) > self::MAX_FILES_LENGTH) {
                 $output->writeln('Used disk percentage is greater than ' . $maxPercentage . '% or files count is greater than ' . self::MAX_FILES_LENGTH);
+                $dirs = array_map('self::addFinalBarAndDot', $dirs);
 
-                $exclude_files = array('.', '..', $imagesPath . ImagineController::DEFAULT_IMAGE_FILE);
-                $files = array_diff($files, $exclude_files);
-
-                // Sort files by accessed time, latest to earliest
+                // Sort directories by accessed time, earliest to latest
                 array_multisort(
-                    array_map('fileatime', $files),
+                    array_map('filemtime', $dirs),
                     SORT_NUMERIC,
-                    SORT_ASC,
-                    $files
+                    SORT_DESC,
+                    $dirs
                 );
 
+                $dirs = array_map('self::removeFinal', $dirs);
+
                 $fileCounter = 0;
-                while ($this->isUsedDiskSpaceMax($maxPercentage) || count($files) > self::MAX_FILES_LENGTH) {
-                    if (!isset($files[$fileCounter])) {
+                while ($this->isUsedDiskSpaceMax($maxPercentage) || count($dirs) > self::MAX_FILES_LENGTH) {
+                    if (!isset($dirs[$fileCounter])) {
                         break;
                     }
 
-                    $this->deleteThumbnailsAndFile($files[$fileCounter], $output);
-                    unset($files[$fileCounter]);
+                    $this->deleteThumbnailsAndFiles($dirs[$fileCounter], $output);
+                    unset($dirs[$fileCounter]);
                     $fileCounter++;
                 }
             } else {
@@ -60,6 +60,26 @@ class DeleteOldImagesCommand extends Command
         }
 
         $output->writeln('Done.');
+    }
+
+    protected function addFinalBarAndDot($dir)
+    {
+        return $dir . '/.';
+    }
+
+    protected function addFinalBar($dir)
+    {
+        return $dir . '/';
+    }
+
+    protected function addFinalDot($dir)
+    {
+        return $dir . '.';
+    }
+
+    protected function removeFinal($dir, $count = 1)
+    {
+        return substr($dir, 0, -$count);
     }
 
     protected function isUsedDiskSpaceMax($maxPercentage)
@@ -72,22 +92,41 @@ class DeleteOldImagesCommand extends Command
         return $usedPercentage >= $maxPercentage;
     }
 
-    protected function deleteThumbnailsAndFile($filePath, OutputInterface $output)
+    protected function deleteThumbnailsAndFiles($dir, OutputInterface $output)
     {
-        $output->writeln("File to delete = '$filePath'");
-        unlink($filePath);
+        $subDirs =  array_filter(glob($dir . '*'), 'is_dir');
+        $subDirs = array_map('self::addFinalBar', $subDirs);
 
-        $imagesPath = ImagineController::IMAGES_PATH;
-        $thumbnails = array();
-        $thumbnails[] = str_replace(ImagineController::IMAGES_PATH, "media/cache/link_small/$imagesPath", $filePath);
-        $thumbnails[] = str_replace(ImagineController::IMAGES_PATH, "media/cache/link_medium/$imagesPath", $filePath);
-        $thumbnails[] = str_replace(ImagineController::IMAGES_PATH, "media/cache/link_big/$imagesPath", $filePath);
+        foreach ($subDirs as $subDir) {
+            $exclude_files = array('.', '..');
+            $files = glob($subDir . '*.*');
+            $files = array_diff($files, $exclude_files);
 
-        foreach ($thumbnails as $thumbnail) {
-            if (file_exists($thumbnail)) {
-                $output->writeln("Thumbnail to delete = '$thumbnail'");
-                unlink($thumbnail);
+            foreach ($files as $filePath) {
+                $output->writeln("File to delete = '$filePath'");
+                unlink($filePath);
+
+                $imagesPath = ImagineController::IMAGES_PATH;
+                $thumbnails = array();
+                $thumbnails[] = str_replace(ImagineController::IMAGES_PATH, "media/cache/link_small/$imagesPath", $filePath);
+                $thumbnails[] = str_replace(ImagineController::IMAGES_PATH, "media/cache/link_medium/$imagesPath", $filePath);
+                $thumbnails[] = str_replace(ImagineController::IMAGES_PATH, "media/cache/link_big/$imagesPath", $filePath);
+
+                foreach ($thumbnails as $thumbnail) {
+                    if (file_exists($thumbnail)) {
+                        $output->writeln("Thumbnail to delete = '$thumbnail'");
+                        unlink($thumbnail);
+                    }
+                }
             }
+            @rmdir(str_replace(ImagineController::IMAGES_PATH, "media/cache/link_small/" . ImagineController::IMAGES_PATH, $subDir));
+            @rmdir(str_replace(ImagineController::IMAGES_PATH, "media/cache/link_medium/" . ImagineController::IMAGES_PATH, $subDir));
+            @rmdir(str_replace(ImagineController::IMAGES_PATH, "media/cache/link_big/" . ImagineController::IMAGES_PATH, $subDir));
+            rmdir($subDir);
         }
+        @rmdir(str_replace(ImagineController::IMAGES_PATH, "media/cache/link_small/" . ImagineController::IMAGES_PATH, $dir));
+        @rmdir(str_replace(ImagineController::IMAGES_PATH, "media/cache/link_medium/" . ImagineController::IMAGES_PATH, $dir));
+        @rmdir(str_replace(ImagineController::IMAGES_PATH, "media/cache/link_big/" . ImagineController::IMAGES_PATH, $dir));
+        rmdir($dir);
     }
 }
