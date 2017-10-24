@@ -52,7 +52,7 @@ class ImagineController extends DefaultImagineController
                 }
 
                 $binary = $this->dataManager->find($filter, $path);
-                if ($binary->getFormat() === 'svg') {
+                if ($binary->getFormat() === 'svg' || $binary->getFormat() === 'gif') {
                     $filteredBinary = $binary;
                 } else {
                     $filteredBinary = $this->filterManager->applyFilter($binary, $filter);
