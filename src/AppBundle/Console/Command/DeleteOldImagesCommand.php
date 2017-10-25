@@ -103,7 +103,9 @@ class DeleteOldImagesCommand extends Command
             $files = array_diff($files, $exclude_files);
 
             foreach ($files as $filePath) {
-                $output->writeln("File to delete = '$filePath'");
+                if ($output->getVerbosity() >= OutputInterface::VERBOSITY_VERBOSE) {
+                    $output->writeln("File to delete = '$filePath'");
+                }
                 unlink($filePath);
 
                 $imagesPath = ImagineController::IMAGES_PATH;
@@ -114,7 +116,9 @@ class DeleteOldImagesCommand extends Command
 
                 foreach ($thumbnails as $thumbnail) {
                     if (file_exists($thumbnail)) {
-                        $output->writeln("Thumbnail to delete = '$thumbnail'");
+                        if ($output->getVerbosity() >= OutputInterface::VERBOSITY_VERBOSE) {
+                            $output->writeln("Thumbnail to delete = '$thumbnail'");
+                        }
                         unlink($thumbnail);
                     }
                 }
