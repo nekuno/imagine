@@ -31,6 +31,8 @@ class ImagineController extends DefaultImagineController
         $url = $request->get('url');
         $resolver = $request->get('resolver');
 
+        $this->validate($path, $url);
+
         try {
             if (!$this->cacheManager->isStored($path, $filter, $resolver)) {
                 if (!@file_get_contents($path)) {
@@ -102,5 +104,32 @@ class ImagineController extends DefaultImagineController
         }
 
         return $body;
+    }
+
+    protected function validate($path, $url)
+    {
+        $md5 = md5($url);
+        $md5Cropped = substr($md5, -10);
+        $hash = substr((string)$md5Cropped, 0, 4) . '/' . substr((string)$md5Cropped, 4, 4) . '/' . substr((string)$md5Cropped, 8);
+        $calculatedPath = 'uploads/links/' . $hash . '.' . $this->getExtension($url);
+        if ($calculatedPath !== $path) {
+            throw new \Exception(sprintf('Calculated path %s differs from sent path %s', $calculatedPath, $path));
+        }
+    }
+
+    protected function getExtension($url)
+    {
+        if (strripos($url, '?')) {
+            $url = substr($url, 0, strripos($url, '?'));
+        }
+        $extension = substr($url, strripos($url, '.') + 1);
+        $isValidExtension = in_array($extension, self::getValidExtensions());
+
+        return $isValidExtension ? $extension : 'png';
+    }
+
+    private static function getValidExtensions()
+    {
+        return ['jpg', 'jpeg', 'tif', 'tiff', 'gif', 'png', 'bmp', 'pbm', 'pgm', 'ppm', 'webp', 'hdr', 'heif', 'heic', 'bpg', 'ico', 'cgm', 'svg', 'gbm'];
     }
 }
