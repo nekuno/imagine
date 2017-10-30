@@ -2,5 +2,5 @@
 /app/config/parameters.yml
 /var/*
 /vendor/
-/web/media/cache
-/web/uploads/links
+/web/media
+/web/uploads

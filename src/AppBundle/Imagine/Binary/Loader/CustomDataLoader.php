@@ -39,7 +39,7 @@ class CustomDataLoader implements LoaderInterface
         try {
             $binary = file_get_contents($path);
         } catch (\Exception $e) {
-            $binary = file_get_contents(ImagineController::IMAGES_PATH . ImagineController::DEFAULT_IMAGE_FILE);
+            $binary = file_get_contents(ImagineController::DEFAULT_IMAGE_FILE);
         }
 
         $mime = $this->mimeTypeGuesser->guess($binary);

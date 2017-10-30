@@ -13,13 +13,14 @@ use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 class ImagineController extends DefaultImagineController
 {
     const IMAGES_PATH = 'uploads/links/';
-    const DEFAULT_IMAGE_FILE = 'default-content-image-squared.jpg';
+    const DEFAULT_IMAGE_FILE = 'images/default-content-image-squared.jpg';
+
     /**
      * This action applies a given filter to a given image, optionally saves the image and outputs it to the browser at the same time.
      *
      * @param Request $request
-     * @param string  $path
-     * @param string  $filter
+     * @param string $path
+     * @param string $filter
      *
      * @throws \RuntimeException
      * @throws BadRequestHttpException
@@ -38,18 +39,18 @@ class ImagineController extends DefaultImagineController
                 if (!@file_get_contents($path)) {
                     try {
                         if ($content = $this->fetchUrl($url)) {
-                            if(!file_exists(dirname($path))) {
+                            if (!file_exists(dirname($path))) {
                                 mkdir(dirname($path), 0755, true);
                             }
                             $fp = fopen($path, "wb");
                             fwrite($fp, $content);
                             fclose($fp);
                         } else {
-                            $path = self::IMAGES_PATH . self::DEFAULT_IMAGE_FILE;
+                            $path = self::DEFAULT_IMAGE_FILE;
                         }
 
                     } catch (\Exception $e) {
-                        $path = self::IMAGES_PATH . self::DEFAULT_IMAGE_FILE;
+                        $path = self::DEFAULT_IMAGE_FILE;
                     }
                 }
 
@@ -82,7 +83,8 @@ class ImagineController extends DefaultImagineController
         }
     }
 
-    protected function fetchUrl($uri) {
+    protected function fetchUrl($uri)
+    {
         $handle = curl_init();
 
         curl_setopt($handle, CURLOPT_URL, $uri);
@@ -90,14 +92,14 @@ class ImagineController extends DefaultImagineController
         curl_setopt($handle, CURLOPT_BINARYTRANSFER, false);
         curl_setopt($handle, CURLOPT_HEADER, true);
         curl_setopt($handle, CURLOPT_RETURNTRANSFER, true);
-        curl_setopt($handle, CURLOPT_USERAGENT,'Mozilla/5.0 (Windows; U; Windows NT 5.1; en-US; rv:1.8.1.13) Gecko/20080311 Firefox/2.0.0.13');
+        curl_setopt($handle, CURLOPT_USERAGENT, 'Mozilla/5.0 (Windows; U; Windows NT 5.1; en-US; rv:1.8.1.13) Gecko/20080311 Firefox/2.0.0.13');
         curl_setopt($handle, CURLOPT_CONNECTTIMEOUT, 10);
-        curl_setopt($handle, CURLOPT_FOLLOWLOCATION, TRUE);
+        curl_setopt($handle, CURLOPT_FOLLOWLOCATION, true);
 
         $response = curl_exec($handle);
-        $hLength  = curl_getinfo($handle, CURLINFO_HEADER_SIZE);
+        $hLength = curl_getinfo($handle, CURLINFO_HEADER_SIZE);
         $httpCode = curl_getinfo($handle, CURLINFO_HTTP_CODE);
-        $body     = substr($response, $hLength);
+        $body = substr($response, $hLength);
 
         if ($httpCode >= 400) {
             throw new \Exception($httpCode);
