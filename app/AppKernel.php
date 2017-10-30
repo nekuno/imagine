@@ -8,7 +8,7 @@ use Symfony\Component\Routing\RouteCollectionBuilder;
 use Doctrine\Common\Annotations\AnnotationRegistry;
 
 // require Composer's autoloader
-$loader = require __DIR__.'/../vendor/autoload.php';
+$loader = require __DIR__ . '/../vendor/autoload.php';
 // auto-load annotations
 //AnnotationRegistry::registerLoader(array($loader, 'loadClass'));
 
@@ -33,7 +33,7 @@ class AppKernel extends Kernel
 
     protected function configureContainer(ContainerBuilder $c, LoaderInterface $loader)
     {
-        $loader->load(__DIR__.'/config/config.yml');
+        $loader->load(__DIR__ . '/config/config.yml');
 
         // configure WebProfilerBundle only if the bundle is enabled
         /*if (isset($this->bundles['WebProfilerBundle'])) {
@@ -53,7 +53,6 @@ class AppKernel extends Kernel
             $routes->import('@WebProfilerBundle/Resources/config/routing/profiler.xml', '/_profiler');
         }
 
-
         // load the annotation routes
         //$routes->import('@LiipImagineBundle/Resources/config/routing.xml', '/', 'xml');
 
@@ -61,15 +60,13 @@ class AppKernel extends Kernel
         //$routes->import(__DIR__.'/../src/App/Controller/', '/', 'annotation');
     }
 
-    // optional, to use the standard Symfony cache directory
-   /* public function getCacheDir()
+    public function getCacheDir()
     {
-        return __DIR__.'/../var/cache/'.$this->getEnvironment();
+        return __DIR__ . '/../var/cache/' . $this->getEnvironment();
     }
 
-    // optional, to use the standard Symfony logs directory
     public function getLogDir()
     {
-        return __DIR__.'/../var/logs';
-    }*/
+        return __DIR__ . '/../var/logs';
+    }
 }

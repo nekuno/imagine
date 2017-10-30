@@ -1,7 +1,6 @@
-.idea
-app/config/parameters.yml
-app/cache
-app/logs
-vendor
-web/media/cache
-web/uploads/links
+/.idea/
+/app/config/parameters.yml
+/var/*
+/vendor/
+/web/media/cache
+/web/uploads/links
