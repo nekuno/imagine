@@ -22,6 +22,7 @@ class AppKernel extends Kernel
             new Sensio\Bundle\FrameworkExtraBundle\SensioFrameworkExtraBundle(),
             new Symfony\Bundle\FrameworkBundle\FrameworkBundle(),
             new Liip\ImagineBundle\LiipImagineBundle(),
+            new AppBundle\AppBundle(),
         );
 
         /*if ($this->getEnvironment() == 'dev') {
